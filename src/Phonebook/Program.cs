@@ -1,5 +1,4 @@
 ﻿using Phonebook.Models;
-using Phonebook.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,7 @@ namespace Phonebook
     {
         public static void Main(string[] args)
         {
-            var converter = new PhoneConverter();
+            var phonebook = new Services.PhonebookService();
 
             var phones = new List<string>
             {
@@ -27,13 +26,8 @@ namespace Phonebook
                 "8902 201 1111 11 // существует, но регион - вся Россия (id=0)",
                 "8119898988",
             };
-            
-            var result = new List<ConverterResponse>();
-            foreach (var phone in phones)
-            {
-                result.Add(converter.GetInfo(phone));
-            }
 
+            var result = phonebook.GetInfo(phones);
             Display(result);
 
             Console.ReadLine();

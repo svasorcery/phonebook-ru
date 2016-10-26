@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Phonebook.Services
 {
-    public class PhoneConverter
+    public class PhonebookService
     {
         private readonly Stores.DefCodeStore _defCodeStore;
         private readonly Stores.OperatorStore _operatorStore;
@@ -15,7 +15,7 @@ namespace Phonebook.Services
         private readonly List<char> _registeredCountryCodeChars;
         private readonly List<char> _registeredPrefixFirstChars;
 
-        public PhoneConverter()
+        public PhonebookService()
         {
             _defCodeStore = new Stores.DefCodeStore();
             _operatorStore = new Stores.OperatorStore();
@@ -45,6 +45,16 @@ namespace Phonebook.Services
                 phoneString = null;
             }
             return GetConvertResponse(input, phoneString);
+        }
+
+        public List<ConverterResponse> Convert(List<string> phones)
+        {
+            var result = new List<ConverterResponse>();
+            foreach (var input in phones)
+            {
+                result.Add(Convert(input));
+            }
+            return result;
         }
 
         public ConverterResponse GetInfo(string input)
@@ -96,6 +106,26 @@ namespace Phonebook.Services
             }
 
             return GetPhoneInfoResponse(phone, @operator, region, null, input);
+        }
+
+        public List<ConverterResponse> GetInfo(List<string> phones)
+        {
+            var result = new List<ConverterResponse>();
+            foreach (var input in phones)
+            {
+                result.Add(GetInfo(input));
+            }
+            return result;
+        }
+
+        public List<ConverterResponse> GetInfo(List<Phone> phones)
+        {
+            var result = new List<ConverterResponse>();
+            foreach (var input in phones)
+            {
+                result.Add(GetInfo(input));
+            }
+            return result;
         }
 
 
