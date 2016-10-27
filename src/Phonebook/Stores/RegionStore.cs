@@ -34,7 +34,7 @@ namespace Phonebook.Stores
             }
             catch (Exception e)
             {
-                throw new ArgumentNullException($"Запись с id={num} не найдена", e);
+                throw new FormatException($"Запись с id={num} не найдена", e);
             }
         }
 

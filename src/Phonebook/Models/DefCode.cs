@@ -7,7 +7,7 @@ namespace Phonebook.Models
 {
     public class DefCode
     {
-        public int Def { get; set; }
+        public int Prefix { get; set; }
         public int Min { get; set; }
         public int Max { get; set; }
         public int OperatorId { get; set; }

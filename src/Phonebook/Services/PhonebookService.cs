@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Phonebook.Services
@@ -15,6 +16,8 @@ namespace Phonebook.Services
         private readonly List<char> _registeredCountryCodeChars;
         private readonly List<char> _registeredPrefixFirstChars;
 
+        private const int _maxPhoneLength = 11;
+
         public PhonebookService()
         {
             _defCodeStore = new Stores.DefCodeStore();
@@ -27,22 +30,28 @@ namespace Phonebook.Services
 
         public ConverterResponse Convert(string input)
         {
-            var phoneString = String.Empty;
+            var phoneBuilder = new StringBuilder(_maxPhoneLength);
             foreach (var s in input)
             {
+                if (phoneBuilder.Length == _maxPhoneLength) { break; }
                 if (char.IsDigit(s))
                 {
-                    phoneString += s;
+                    phoneBuilder.Append(s);
                 }
                 //else if (char.IsLetter(s)) { break; }
             }
-            if (phoneString.Length >= 11 && _registeredCountryCodeChars.Contains(phoneString.First()))
+
+            var phoneString = phoneBuilder.ToString();
+            if (!String.IsNullOrEmpty(phoneString))
             {
-                phoneString = phoneString.Substring(1, 10);
-            }
-            if (!_registeredPrefixFirstChars.Contains(phoneString.First()))
-            {
-                phoneString = null;
+                if (phoneString.Length >= _maxPhoneLength && _registeredCountryCodeChars.Contains(phoneString.First()))
+                {
+                    phoneString = phoneString.Substring(1, 10);
+                }
+                if (!_registeredPrefixFirstChars.Contains(phoneString.First()))
+                {
+                    phoneString = null;
+                }
             }
             return GetConvertResponse(input, phoneString);
         }
@@ -131,35 +140,38 @@ namespace Phonebook.Services
 
         private ConverterResponse GetConvertResponse(string input, string phone)
         {
-            return phone != null ?
-                phone.Length == 10 ?
-                    new ConverterResponse
+            if (phone == null)
+            {
+                return new ConverterResponse
+                {
+                    Input = input,
+                    Result = null,
+                    Error = new FormatException($"Телефон \"{input}\" имеет недопустимый формат"),
+                    Status = GetStatus(Status.Error)
+                };
+            }
+            //else
+            return phone.Length == _maxPhoneLength - 1 ?
+                new ConverterResponse
+                {
+                    Input = input,
+                    Result = new PhoneInfo
                     {
-                        Input = input,
-                        Result = new PhoneInfo
+                        Phone = new Phone
                         {
-                            Phone = new Phone
-                            {
-                                CountryCode = "7",
-                                Prefix = phone.Substring(0, 3),
-                                Number = phone.Substring(3, 7),
-                            },
+                            CountryCode = "7",
+                            Prefix = phone.Substring(0, 3),
+                            Number = phone.Substring(3, 7),
                         },
-                        Status = GetStatus(Status.Valid),
-                    } :
-                    new ConverterResponse
-                    {
-                        Input = input,
-                        Result = null,
-                        Error = new ArgumentException("Недопустимая длина телефонной строки"),
-                        Status = GetStatus(Status.Error),
-                    } :
+                    },
+                    Status = GetStatus(Status.Valid),
+                } :
                 new ConverterResponse
                 {
                     Input = input,
                     Result = null,
-                    Error = new FormatException("Недопустимый формат телефонной строки"),
-                    Status = GetStatus(Status.Error)
+                    Error = new ArgumentException("Недопустимая длина телефонной строки"),
+                    Status = GetStatus(Status.Error),
                 };
         }
 
@@ -173,7 +185,7 @@ namespace Phonebook.Services
             if (@operator == null)
             {
                 response.Status = GetStatus(Status.Error);
-                response.Error = new ArgumentNullException("Оператор не найден", error);
+                response.Error = new FormatException("Оператор не найден", error);
                 return response;
             }
 
@@ -183,7 +195,7 @@ namespace Phonebook.Services
             if (region == null)
             {
                 response.Status = GetStatus(Status.Error);
-                response.Error = new ArgumentNullException("Регион не найден", error);
+                response.Error = new FormatException("Регион не найден", error);
                 return response;
             }
 
